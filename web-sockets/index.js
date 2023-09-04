@@ -45,8 +45,9 @@ module.exports.initSocketsServer = function initSocketsServer({ http, modelManag
       }
       for (const { propertyMod, model } of models) {
         socketsControllerClass.prototype[propertyMod] = model
+        Object.defineProperty(socketsControllerClass.prototype, propertyMod, { value: model, writable: false })
       }
-      socketsControllerClass.prototype.io = io
+      Object.defineProperty(socketsControllerClass.prototype, 'io', { value: io, writable: false })
       const instanceSocketsController = new socketsControllerClass()
       let prefix = ''
       if (instanceSocketsController.prefix) {

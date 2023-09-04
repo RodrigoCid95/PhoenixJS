@@ -35,5 +35,5 @@ var import_web_sockets = require("phoenix-js/web-sockets");
   await libraryManager.build((message) => console.error(message));
   const modelManager = new import_core.ModelManager(models, libraryManager);
   const phoenixSocketsConfig = configManager.getConfig("phoenixSocketsConfig");
-  await (0, import_web_sockets.initSocketsServer)({ modelManager, libraryManager, socketsControllers, phoenixSocketsConfig });
+  await (0, import_web_sockets.initSocketsServer)({ modelManager, libraryManager, socketsControllers, phoenixSocketsConfig, onError: (error) => console.error(error) });
 })();

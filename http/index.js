@@ -67,7 +67,7 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
         delete httpControllerClass.prototype.models
       }
       for (const { propertyMod, model } of models) {
-        httpControllerClass.prototype[propertyMod] = model
+        Object.defineProperty(httpControllerClass.prototype, propertyMod, { value: model, writable: false })
       }
       const instanceHttpController = new httpControllerClass()
       let prefix = ''
