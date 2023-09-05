@@ -18,7 +18,7 @@
   const initsPath = path.join(distDir, 'libs')
   const inits = require(initsPath)
   const libraryManager = new LibraryManager(configManager, inits)
-  await libraryManager.build(message => process.send(message))
+  await libraryManager.initialize(message => process.send(message))
 
   //#endregion
   //#region Models
@@ -32,7 +32,7 @@
 
   if (typeServer === 'http') {
     const { initHttpServer } = require('./../http')
-    const httpControllers = require(`${distDir}/httpControllers`)
+    const httpControllers = require(`${distDir}/controllers`)
     initHttpServer({
       modelManager,
       httpControllers,
@@ -41,7 +41,7 @@
     })
   } else if (typeServer === 'sockets') {
     const { initSocketsServer } = require('./../web-sockets')
-    const socketsControllers = require(`${distDir}/socketsControllers`)
+    const socketsControllers = require(`${distDir}/controllers`)
     initSocketsServer({
       modelManager,
       libraryManager,

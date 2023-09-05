@@ -59,7 +59,7 @@ export class LibraryManager {
    * @function
    * @returns {Promise<void>} Returns a promise that is resolved when all libraries declared in the constructor are compiled / configured.
    */
-  public build(log: (message: string) => void): Promise<void>
+  public initialize(log: (message: string) => void): Promise<void>
   /**
    * Find the instance of a library.
    * @param {string} name Name of the library.

@@ -57,7 +57,7 @@ module.exports.LibraryManager = class LibraryManager {
     this.libraries = libraries
     this.librariesInstances = {}
   }
-  async build(log = undefined) {
+  async initialize(log = undefined) {
     const nameLibs = Object.keys(this.libraries)
     for (const name of nameLibs) {
       if (log) {

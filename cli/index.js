@@ -39,11 +39,15 @@
       { input: path.join(mainDir, 'libraries', 'index.ts'), output: path.join(distDir, 'libs.js') },
       { input: path.join(mainDir, 'models', 'index.ts'), output: path.join(distDir, 'models.js') }
     ]
-    if (type === 'http' || type === 'http-sockets') {
-      modules.push({ input: path.join(mainDir, 'controllers', 'http.ts'), output: path.join(distDir, 'httpControllers.js') })
+    if (type === 'http') {
+      modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
     }
-    if (type === 'sockets' || type === 'http-sockets') {
-      modules.push({ input: path.join(mainDir, 'controllers', 'sockets.ts'), output: path.join(distDir, 'socketsControllers.js') })
+    if (type === 'sockets') {
+      modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
+    }
+    if (type === 'http-sockets') {
+      modules.push({ input: path.join(mainDir, 'controllers', 'http', 'index.ts'), output: path.join(distDir, 'httpControllers.js') })
+      modules.push({ input: path.join(mainDir, 'controllers', 'sockets', 'index.ts'), output: path.join(distDir, 'socketsControllers.js') })
     }
     if (boot === 'manual') {
       modules.push({ input: path.join(mainDir, 'main.ts'), output: path.join(distDir, 'main.js'), inject: [path.resolve(__dirname, 'imports.js')] })
