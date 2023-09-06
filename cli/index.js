@@ -2,62 +2,102 @@
 'use strict';
 (async (args) => {
   const command = args.shift()
+  const fs = require('fs')
+  const path = require('path')
+  const mainDir = path.resolve(process.cwd())
+  const packagePath = path.join(mainDir, 'package.json')
+  const tsConfigPath = path.join(mainDir, 'tsconfig.json')
+  const pack = require(packagePath)
+  const phoenixSettings = pack.phoenix || {
+    type: 'http',
+    boot: 'auto',
+    resources: []
+  }
+  if (!phoenixSettings.type) {
+    phoenixSettings['type'] = 'http'
+  }
+  if (!phoenixSettings.boot) {
+    phoenixSettings['boot'] = 'auto'
+  }
+  if (!phoenixSettings.resources) {
+    phoenixSettings.resources = []
+  }
+  pack.phoenix = phoenixSettings
+  const { type, boot, resources } = phoenixSettings
+  const releaseDir = (phoenixSettings.releaseDir && typeof phoenixSettings.releaseDir === 'string') ? path.resolve(mainDir, phoenixSettings.releaseDir) : path.join(mainDir, '.release')
+  const distDir = (command === 'build') ? path.join(releaseDir, 'server') : path.join(mainDir, '.debugger')
+
+  const modules = [
+    { input: path.join(mainDir, 'config', 'index.ts'), output: path.join(distDir, 'configProfiles.js') },
+    { input: path.join(mainDir, 'libraries', 'index.ts'), output: path.join(distDir, 'libs.js') },
+    { input: path.join(mainDir, 'models', 'index.ts'), output: path.join(distDir, 'models.js') }
+  ]
+  if (type === 'http') {
+    modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
+  }
+  if (type === 'sockets') {
+    modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
+  }
+  if (type === 'http-sockets') {
+    modules.push({ input: path.join(mainDir, 'controllers', 'http', 'index.ts'), output: path.join(distDir, 'httpControllers.js') })
+    modules.push({ input: path.join(mainDir, 'controllers', 'sockets', 'index.ts'), output: path.join(distDir, 'socketsControllers.js') })
+  }
+  if (boot === 'manual') {
+    modules.push({ input: path.join(mainDir, 'main.ts'), output: path.join(distDir, 'main.js'), inject: [path.resolve(__dirname, 'imports.js')] })
+  }
+
+  modules.forEach(({ input }) => {
+    if (!fs.existsSync(input)) {
+      const dir = path.dirname(input)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+      fs.writeFileSync(input, '', { encoding: 'utf8' })
+    }
+  })
+
+  if (!fs.existsSync(tsConfigPath)) {
+    const tsconfig = {
+      compilerOptions: {
+        baseUrl: ".",
+        declaration: true,
+        emitDeclarationOnly: true,
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        target: "ES6",
+        moduleResolution: "Node",
+        sourceMap: true,
+        strictNullChecks: true,
+        allowSyntheticDefaultImports: true,
+        paths: {
+          "config/*": ["config/*"],
+          "controllers": ["controllers/*"],
+          "libraries/*": ["libraries/*"],
+          "models/*": ["models/*"]
+        }
+      }
+    }
+    fs.writeFileSync(tsConfigPath, JSON.stringify(tsconfig, null, '\t'), { encoding: 'utf-8' })
+  }
+
+  const log = (message) => {
+    if (process.stdout.clearLine) {
+      process.stdout.clearLine()
+      process.stdout.cursorTo(0)
+    }
+    if (process.stdout.write) {
+      process.stdout.write(message)
+    } else {
+      console.log(message)
+    }
+  }
+
   if (command) {
-    const fs = require('fs')
-    const path = require('path')
-    const { Flags } = require('./../core')
-    const flags = new Flags()
-    const mainDir = path.resolve(process.cwd())
-    const packagePath = path.join(mainDir, 'package.json')
-    const tsConfigPath = path.join(mainDir, 'tsconfig.json')
-    const pack = require(packagePath)
     const external = [...Object.keys(pack.dependencies || { 'phoenix': null }), ...Object.keys(pack.devDependencies || { 'phoenix': null })]
-    const phoenixSettings = pack.phoenix || {}
-    const type = phoenixSettings.type || flags.get('type') || 'http'
-    const boot = phoenixSettings.boot || 'auto'
-    const releaseDir = (phoenixSettings.releaseDir && typeof phoenixSettings.releaseDir === 'string') ? path.resolve(mainDir, phoenixSettings.releaseDir) : path.join(mainDir, '.release')
-    const distDir = (command === 'build') ? path.join(releaseDir, 'server') : path.join(mainDir, '.debugger')
 
     if (fs.existsSync(distDir)) {
       fs.rmSync((command === 'build') ? releaseDir : distDir, { recursive: true, force: true })
     }
-
-    const log = (message) => {
-      if (process.stdout.clearLine) {
-        process.stdout.clearLine()
-        process.stdout.cursorTo(0)
-      }
-      if (process.stdout.write) {
-        process.stdout.write(message)
-      } else {
-        console.log(message)
-      }
-    }
-
-    const modules = [
-      { input: path.join(mainDir, 'config', 'index.ts'), output: path.join(distDir, 'configProfiles.js') },
-      { input: path.join(mainDir, 'libraries', 'index.ts'), output: path.join(distDir, 'libs.js') },
-      { input: path.join(mainDir, 'models', 'index.ts'), output: path.join(distDir, 'models.js') }
-    ]
-    if (type === 'http') {
-      modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
-    }
-    if (type === 'sockets') {
-      modules.push({ input: path.join(mainDir, 'controllers', 'index.ts'), output: path.join(distDir, 'controllers.js') })
-    }
-    if (type === 'http-sockets') {
-      modules.push({ input: path.join(mainDir, 'controllers', 'http', 'index.ts'), output: path.join(distDir, 'httpControllers.js') })
-      modules.push({ input: path.join(mainDir, 'controllers', 'sockets', 'index.ts'), output: path.join(distDir, 'socketsControllers.js') })
-    }
-    if (boot === 'manual') {
-      modules.push({ input: path.join(mainDir, 'main.ts'), output: path.join(distDir, 'main.js'), inject: [path.resolve(__dirname, 'imports.js')] })
-    }
-
-    modules.forEach(({ input }) => {
-      if (!fs.existsSync(input)) {
-        fs.writeFileSync(input, '', { encoding: 'utf8' })
-      }
-    })
 
     let isRunning = false
     let compute = null
@@ -159,9 +199,8 @@
           outfile: path.join(phoenixPath, 'web-sockets.js')
         })
       }
-      const publicPaths = phoenixSettings['public-paths'] || []
-      for (const publicPath of publicPaths) {
-        const srcDir = path.join(mainDir, publicPath)
+      for (const resource of resources) {
+        const srcDir = path.join(mainDir, resource)
         if (fs.existsSync(srcDir)) {
           const destDir = path.join(rootdir, publicPath)
           fs.cpSync(srcDir, destDir, { recursive: true, force: true })
@@ -175,6 +214,16 @@
       }
     }
   } else {
-    console.log('Phoenix Framework!\n')
+    if (!pack.scripts) {
+      pack.scripts = {}
+    }
+    if (!pack.scripts.start) {
+      pack.scripts.start = 'phoenix start'
+    }
+    if (!pack.scripts.build) {
+      pack.scripts.build = 'phoenix build'
+    }
+    log('Phoenix Framework!\n')
   }
+  fs.writeFileSync(packagePath, JSON.stringify(pack, null, '\t'), { encoding: 'utf-8' })
 })(process.argv.slice(2))

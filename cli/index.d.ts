@@ -1,6 +1,6 @@
 import { AnyObject, AnyClass, InitLibraries, ModelClasses } from '../core'
 
-export class Imports {
+export declare class Imports {
   readonly configProfiles: AnyObject
   readonly httpControllers: AnyClass
   readonly socketsControllers: AnyClass
