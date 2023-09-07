@@ -1,39 +1,56 @@
-module.exports.On = function On(methods, args) {
+const registerRoute = (target, propertyKey, descriptor) => {
+  if (!target.hasOwnProperty('routes')) {
+    target.routes = {}
+  }
+  if (!target.routes.hasOwnProperty(propertyKey)) {
+    target.routes[propertyKey] = {
+      methods: [],
+      path: '',
+      method: descriptor.value,
+      middlewares: {
+        after: [],
+        before: []
+      }
+    }
+  }
+}
+module.exports.afterMiddelware = function afterMid(mids) {
   return (target, propertyKey, descriptor) => {
-    if (!target.hasOwnProperty('routes')) {
-      target.routes = []
-    }
-    methods = Array.isArray(methods) ? methods : [methods]
-    const fun = propertyKey
-    const middlewares = [propertyKey]
-    if (typeof args === 'object') {
-      if (args.beforeMiddlewares) {
-        for (const middleware of args.beforeMiddlewares) {
-          if (typeof middleware === 'string' && !target.hasOwnProperty(middleware)) {
-            console.error(`\n${target.constructor.name}: El middelware ${middleware} no está declarado!`)
-            process.exit()
-          } else {
-            middlewares.unshift(middleware)
-          }
+    registerRoute(target, propertyKey, descriptor)
+    for (let mid of mids) {
+      if (typeof mid === 'string') {
+        if (!target.hasOwnProperty(mid)) {
+          console.error(`\n${target.name}: El middelware ${mid} no está declarado!`)
+          return descriptor
         }
+        mid = target[mid].bind(target)
       }
-      if (args.afterMiddlewares) {
-        for (const middleware of args.afterMiddlewares) {
-          if (typeof middleware === 'string' && !target.hasOwnProperty(middleware)) {
-            console.error(`\n${target.constructor.name}: El middelware ${middleware} no está declarado!`)
-            process.exit()
-          } else {
-            middlewares.push(middleware)
-          }
-        }
-      }
+      target.routes[propertyKey].middlewares.after.push(mid)
     }
-    methods.forEach(method => target.routes.push({
-      path: typeof args === 'string' ? args : args.path,
-      method: method,
-      func: fun,
-      middlewares,
-    }))
+    return descriptor
+  }
+}
+module.exports.beforeMiddelware = function beforeMid(mids) {
+  return (target, propertyKey, descriptor) => {
+    registerRoute(target, propertyKey, descriptor)
+    for (let mid of mids) {
+      if (typeof mid === 'string') {
+        if (!target.hasOwnProperty(mid)) {
+          console.error(`\n${target.name}: El middelware ${mid} no está declarado!`)
+          return descriptor
+        }
+        mid = target[mid].bind(target)
+      }
+      target.routes[propertyKey].middlewares.before.push(mid)
+    }
+    return descriptor
+  }
+}
+module.exports.On = function On(methods, path) {
+  return (target, propertyKey, descriptor) => {
+    registerRoute(target, propertyKey, descriptor)
+    target.routes[propertyKey].methods = Array.isArray(methods) ? methods : [methods]
+    target.routes[propertyKey].path = path
     return descriptor
   }
 }
@@ -48,7 +65,8 @@ module.exports.Methods = {
   GET: 'get',
   POST: 'post',
   PUT: 'put',
-  DELETE: 'delete'
+  DELETE: 'delete',
+  ALL: ''
 }
 module.exports.initHttpServer = function initHttpServer({ returnInstance = false, modelManager, httpControllers: httpControllersClasses, phoenixHttpConfig = {}, onMessage = console.log }) {
   const express = require('express')
@@ -70,23 +88,24 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
         Object.defineProperty(httpControllerClass.prototype, propertyMod, { value: model, writable: false })
       }
       const instanceHttpController = new httpControllerClass()
-      let prefix = ''
-      if (instanceHttpController.prefix) {
-        prefix = `/${instanceHttpController.prefix}`
-        delete instanceHttpController.prefix
-      }
       const router = express.Router()
-      for (let { path, middlewares, method, func } of routes) {
-        path = prefix + path
-        if (middlewares) {
-          const midd = middlewares.map(middleware => (typeof middleware === 'string') ? instanceHttpController[middleware].bind(instanceHttpController) : middleware)
-          router[method](path, midd)
-        } else {
-          const fn = instanceHttpController[func].bind(instanceHttpController)
-          router[method](path, fn)
+      const routeKeys = Object.keys(routes)
+      for (const key of routeKeys) {
+        let { methods, path, method, middlewares = {} } = routes[key]
+        let { before = [], after = [] } = middlewares
+        before = before.map(mid => typeof mid === 'string' ? instanceHttpController[mid].bind(instanceHttpController) : mid)
+        after = after.map(mid => typeof mid === 'string' ? instanceHttpController[mid].bind(instanceHttpController) : mid)
+        const mids = [...before, method, ...after]
+        for (const m of methods) {
+          router[m || 'all'](path, ...mids)
         }
       }
-      routers.push(router)
+      const r = [router]
+      if (instanceHttpController.prefix) {
+        r.unshift(`/${instanceHttpController.prefix}`)
+        delete instanceHttpController.prefix
+      }
+      routers.push(r)
     }
   }
   const {
@@ -135,7 +154,7 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
   }
   app.use(express.json())
   for (const router of routers) {
-    app.use(router)
+    app.use(...router)
   }
   if (events.onError) {
     app.use(events.onError)

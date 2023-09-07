@@ -29,12 +29,13 @@ export enum Methods {
   GET = 'get',
   POST = 'post',
   PUT = 'put',
-  DELETE = 'delete'
+  DELETE = 'delete',
+  ALL = ''
 }
 export function On(method: Methods, path: string): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
 export function On(methods: Methods[], path: string): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
-export function On(method: Methods, options: MethodOptions): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
-export function On(methods: Methods[], options: MethodOptions): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
+export function afterMiddelware(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
+export function beforeMiddelware(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
 export function Prefix(prefix: string): <T extends new (...args: any[]) => {}>(constructor: T) => {
   new(...args: any[]): { prefix: string; };
 } & T
