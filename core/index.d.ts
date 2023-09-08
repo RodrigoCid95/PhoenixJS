@@ -81,3 +81,15 @@ export class ModelManager {
   initialize(): Promise<void>
   public getModel<M = AnyClass>(name: string): M
 }
+export type CallbackEmitter<T = undefined> = (args: T) => void | Promise<void>
+export declare class Emitter {
+  on<T = undefined>(callback: CallbackEmitter<T>): string
+  off(uuid: string): void
+  emmit<T = {}>(args?: T | undefined): void
+}
+export declare class Emitters {
+  static createEmitter(): Emitter
+  on<T = undefined>(event: string, callback: CallbackEmitter<T>): string
+  off(event: string, uuid: string): void
+  emmit<T = undefined>(event: string, args?: T | undefined): void
+}
