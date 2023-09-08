@@ -1,6 +1,6 @@
 {
 	"name": "phoenix-js",
-	"version": "1.4.4",
+	"version": "1.6.5",
 	"description": "",
 	"main": "cli/index.js",
 	"bin": {

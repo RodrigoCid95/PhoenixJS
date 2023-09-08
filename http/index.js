@@ -97,7 +97,7 @@ module.exports.initHttpServer = async function initHttpServer({ returnInstance =
         let { before = [], after = [] } = middlewares
         before = before.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
         after = after.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
-        const mids = [...before, method, ...after]
+        const mids = [...before, method.bind(controller), ...after]
         for (const m of methods) {
           router[m || 'all'](path, ...mids)
         }
