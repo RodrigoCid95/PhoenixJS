@@ -149,7 +149,7 @@ export type OptionsHttpServer = {
   phoenixHttpConfig: PhoenixHTTPConfigProfile
   onMessage?: (message: string) => void
 }
-export function initHttpServer(options: OptionsHttpServer): http.Server | undefined
+export function initHttpServer(options: OptionsHttpServer): Promise<http.Server | undefined>
 /**
  * The object of an express.js response.
  */

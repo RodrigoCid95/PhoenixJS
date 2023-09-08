@@ -68,45 +68,48 @@ module.exports.Methods = {
   DELETE: 'delete',
   ALL: ''
 }
-module.exports.initHttpServer = function initHttpServer({ returnInstance = false, modelManager, httpControllers: httpControllersClasses, phoenixHttpConfig = {}, onMessage = console.log }) {
+module.exports.initHttpServer = async function initHttpServer({ returnInstance = false, modelManager, httpControllers, phoenixHttpConfig = {}, onMessage = console.log }) {
   const express = require('express')
   let app = express()
   const http = require('http')
   const server = http.createServer(app)
   const routers = []
-  for (const nameClass in httpControllersClasses) {
-    const httpControllerClass = httpControllersClasses[nameClass]
-    if (httpControllerClass.prototype.routes) {
-      const routes = httpControllerClass.prototype.routes
-      delete httpControllerClass.prototype.routes
-      let models = []
-      if (httpControllerClass.prototype.models) {
-        models = httpControllerClass.prototype.models.map(({ propertyMod, model }) => ({ propertyMod, model: modelManager.getModel(model) }))
-        delete httpControllerClass.prototype.models
+
+  const controllersName = Object.keys(httpControllers)
+  for (const controllerName of controllersName) {
+    onMessage(`Iniciando controlador HTTP "${controllerName}"...`)
+    const Controller = httpControllers[controllerName]
+    const { models = [], routes = false } = Controller.prototype
+    for (const { propertyMod, model } of models) {
+      Object.defineProperty(Controller.prototype, propertyMod, { value: modelManager.getModel(model), writable: false })
+    }
+    delete Controller.prototype.models
+    if (routes) {
+      delete Controller.prototype.routes
+      const controller = new Controller()
+      if (controller.initialize) {
+        await controller.initialize()
       }
-      for (const { propertyMod, model } of models) {
-        Object.defineProperty(httpControllerClass.prototype, propertyMod, { value: model, writable: false })
-      }
-      const instanceHttpController = new httpControllerClass()
       const router = express.Router()
       const routeKeys = Object.keys(routes)
       for (const key of routeKeys) {
         let { methods, path, method, middlewares = {} } = routes[key]
         let { before = [], after = [] } = middlewares
-        before = before.map(mid => typeof mid === 'string' ? instanceHttpController[mid].bind(instanceHttpController) : mid)
-        after = after.map(mid => typeof mid === 'string' ? instanceHttpController[mid].bind(instanceHttpController) : mid)
+        before = before.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
+        after = after.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
         const mids = [...before, method, ...after]
         for (const m of methods) {
           router[m || 'all'](path, ...mids)
         }
       }
       const r = [router]
-      if (instanceHttpController.prefix) {
-        r.unshift(`/${instanceHttpController.prefix}`)
-        delete instanceHttpController.prefix
+      if (controller.prefix) {
+        r.unshift(`/${controller.prefix}`)
+        delete controller.prefix
       }
       routers.push(r)
     }
+    onMessage(`Controlador HTTP "${controllerName}" listo!`)
   }
   const {
     port = (process.env.PORT ? parseInt(process.env.PORT) : 3001),

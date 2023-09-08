@@ -58,4 +58,4 @@ export type OptionsSocketsServer = {
   phoenixSocketsConfig?: PhoenixSocketsConfig
   onError?: (error: any) => void
 }
-export function initSocketsServer(options: OptionsSocketsServer): void
+export function initSocketsServer(options: OptionsSocketsServer): Promise<void>

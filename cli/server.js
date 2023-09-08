@@ -26,6 +26,7 @@
   const modelsPath = path.join(distDir, 'models')
   const modelClasses = require(modelsPath)
   const modelManager = new ModelManager(modelClasses, libraryManager)
+  await modelManager.initialize(message => process.send(message))
 
   //#endregion
   //#region Server

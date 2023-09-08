@@ -1,8 +1,6 @@
 module.exports.ConfigManager = class ConfigManager {
   constructor(profiles = {}) {
-    const _this = this
-    _this.profiles = {}
-    Object.keys(profiles).forEach(key => _this.profiles[key] = profiles[key])
+    Object.defineProperty(this, 'profiles', { value: profiles, writable: false })
   }
   getConfig(name) {
     return this.profiles[name] || {}
@@ -55,33 +53,21 @@ module.exports.LibraryManager = class LibraryManager {
   constructor(configManager, libraries) {
     this.configManager = configManager
     this.libraries = libraries
-    this.librariesInstances = {}
+    this.instances = {}
   }
-  async initialize(log = undefined) {
-    const nameLibs = Object.keys(this.libraries)
-    for (const name of nameLibs) {
-      if (log) {
-        log(`Iniciando librería ${name}...`)
-      }
-      const library = this.libraries[name]
-      let contentReturn = library(this.configManager.getConfig(name))
-      try {
-        if (contentReturn instanceof Promise) {
-          this.librariesInstances[name] = await contentReturn
-        } else {
-          this.librariesInstances[name] = contentReturn
-        }
-      } catch (error) {
-        throw new Error(`Error al cargar la librería ${name}`)
-      }
-      if (log) {
-        log(`Librería ${name} lista!`)
-      }
+  async initialize(log = console.log) {
+    const librariesName = Object.keys(this.libraries)
+    for (const libraryName of librariesName) {
+      log(`Iniciando librería "${libraryName}"...`)
+      const library = this.libraries[libraryName]
+      const result = await library(this.configManager.getConfig(libraryName))
+      Object.defineProperty(this.instances, libraryName, { value: result, writable: false })
+      log(`Librería "${libraryName}" lista!`)
     }
     this.isCompiled = true
   }
   getLibrary(name) {
-    return this.librariesInstances[name]
+    return this.instances[name]
   }
 }
 module.exports.Model = function Model(model) {
@@ -96,23 +82,27 @@ module.exports.Model = function Model(model) {
   }
 }
 module.exports.ModelManager = class ModelsManager {
-  constructor(modelClasses, lm) {
+  constructor(models, lm) {
     this.instances = {}
-    for (const nameClass in modelClasses) {
-      const modelClass = modelClasses[nameClass]
-      let libs = []
-      if (modelClass.prototype.libs) {
-        libs = modelClass.prototype.libs.map(({ propertyLib, nameLib }) => ({
-          propertyLib,
-          lib: lm.getLibrary(nameLib)
-        }))
-        delete modelClass.prototype.libs
+    this.models = models
+    this.lm = lm
+  }
+  async initialize(log = console.log) {
+    const modelsName = Object.keys(this.models)
+    for (const modelName of modelsName) {
+      log(`Iniciando Modelo "${modelName}"...`)
+      const Model = this.models[modelName]
+      const { libs = [] } = Model.prototype
+      for (const { propertyLib, nameLib } of libs) {
+        Object.defineProperty(Model.prototype, propertyLib, { value: this.lm.getLibrary(nameLib), writable: false })
       }
-      for (const { propertyLib, lib } of libs) {
-        modelClass.prototype[propertyLib] = lib
+      delete Model.prototype.libs
+      const model = new Model()
+      if (model.initialize) {
+        await model.initialize()
       }
-      const instanceModel = new modelClass()
-      this.instances[nameClass] = instanceModel
+      Object.defineProperty(this.instances, modelName, { value: model, writable: false })
+      log(`Modelo "${modelName}" listo!`)
     }
   }
   getModel(name) {

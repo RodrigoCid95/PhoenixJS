@@ -78,5 +78,6 @@ export type ModelClasses = {
 }
 export class ModelManager {
   constructor(modelClasses: ModelClasses, lm: LibraryManager)
+  initialize(): Promise<void>
   public getModel<M = AnyClass>(name: string): M
 }

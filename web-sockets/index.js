@@ -14,7 +14,7 @@ module.exports.Prefix = function Prefix(prefix) {
     }
   }
 }
-module.exports.initSocketsServer = function initSocketsServer({ http, modelManager, libraryManager, socketsControllers: socketsControllerClasses, phoenixSocketsConfig = {}, onError = console.error }) {
+module.exports.initSocketsServer = async function initSocketsServer({ http, modelManager, libraryManager, socketsControllers, phoenixSocketsConfig = {}, onError = console.error }) {
   const SocketIO = require('socket.io')
   let io = null
   const {
@@ -29,36 +29,31 @@ module.exports.initSocketsServer = function initSocketsServer({ http, modelManag
   if (events.onBeforeConfig) {
     io = events.onBeforeConfig(io)
   }
-  const sRoutes = []
-  for (const nameClass in socketsControllerClasses) {
-    const socketsControllerClass = socketsControllerClasses[nameClass]
-    if (socketsControllerClass.prototype.routes) {
-      const routes = socketsControllerClass.prototype.routes
-      delete socketsControllerClass.prototype.routes
-      let models = []
-      if (socketsControllerClass.prototype.models) {
-        models = socketsControllerClass.prototype.models.map(({ propertyMod, model }) => ({
-          propertyMod,
-          model: modelManager.getModel(model)
-        }))
-        delete socketsControllerClass.prototype.models
+  const routers = []
+  const contrllersName = Object.keys(socketsControllers)
+  for (const controllerName of contrllersName) {
+    const Controller = socketsControllers[controllerName]
+    const { models = [], routes = false } = Controller.prototype
+    for (const { propertyMod, model } of models) {
+      Object.defineProperty(Controller.prototype, propertyMod, { value: modelManager.getModel(model), writable: false })
+    }
+    delete Controller.prototype.models
+    if (routes) {
+      delete Controller.prototype.models
+      const controller = new Controller()
+      if (controller.initialize) {
+        await controller.initialize()
       }
-      for (const { propertyMod, model } of models) {
-        socketsControllerClass.prototype[propertyMod] = model
-        Object.defineProperty(socketsControllerClass.prototype, propertyMod, { value: model, writable: false })
-      }
-      Object.defineProperty(socketsControllerClass.prototype, 'io', { value: io, writable: false })
-      const instanceSocketsController = new socketsControllerClass()
       let prefix = ''
-      if (instanceSocketsController.prefix) {
-        prefix = instanceSocketsController.prefix
-        delete instanceSocketsController.prefix
+      if (Controller.prefix) {
+        prefix = Controller.prefix
+        delete Controller.prefix
       }
       for (let { nameEvent, propertyKey } of routes) {
         nameEvent = prefix !== '' ? `${prefix} ${nameEvent}` : nameEvent
-        sRoutes.push({
+        routers.push({
           nameEvent,
-          callback: instanceSocketsController[propertyKey].bind(instanceSocketsController)
+          callback: controller[propertyKey].bind(controller)
         })
       }
     }
@@ -67,7 +62,7 @@ module.exports.initSocketsServer = function initSocketsServer({ http, modelManag
     if (events.onConnect) {
       await events.onConnect(socket)
     }
-    for (const { nameEvent, callback } of sRoutes) {
+    for (const { nameEvent, callback } of routers) {
       socket.on(nameEvent, async (...args) => {
         const reply = args.pop()
         const { getLibrary } = libraryManager
@@ -76,7 +71,7 @@ module.exports.initSocketsServer = function initSocketsServer({ http, modelManag
             args = await events.onANewRequest(args, socket, getLibrary.bind(libraryManager))
           }
           args.push(socket)
-          let response = { data: await callback(...args) }
+          let response = { response: await callback(...args) }
           if (events.onBeforeToAnswer && reply) {
             response = await events.onBeforeToAnswer(response, socket, getLibrary.bind(libraryManager))
           }
