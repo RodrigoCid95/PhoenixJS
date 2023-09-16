@@ -68,6 +68,7 @@
         moduleResolution: "Node",
         sourceMap: true,
         strictNullChecks: true,
+        esModuleInterop: true,
         allowSyntheticDefaultImports: true,
         paths: {
           "config/*": ["config/*"],
@@ -202,7 +203,7 @@
       for (const resource of resources) {
         const srcDir = path.join(mainDir, resource)
         if (fs.existsSync(srcDir)) {
-          const destDir = path.join(rootdir, publicPath)
+          const destDir = path.join(rootdir, resource)
           fs.cpSync(srcDir, destDir, { recursive: true, force: true })
         }
       }

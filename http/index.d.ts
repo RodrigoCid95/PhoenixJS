@@ -157,5 +157,7 @@ export declare type Response = express.Response;
 /**
  * The object of an express.js request.
  */
-export declare type Request = express.Request;
+export declare interface Request<S = any> extends express.Request {
+  session: express.Request['session'] & S
+}
 export declare type Next = express.NextFunction;

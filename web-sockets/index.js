@@ -64,7 +64,10 @@ module.exports.initSocketsServer = async function initSocketsServer({ http, mode
     }
     for (const { nameEvent, callback } of routers) {
       socket.on(nameEvent, async (...args) => {
-        const reply = args.pop()
+        let reply = null
+        if (typeof args[args.length - 1] === 'function') {
+          reply = args.pop()
+        }
         const { getLibrary } = libraryManager
         try {
           if (events.onANewRequest) {

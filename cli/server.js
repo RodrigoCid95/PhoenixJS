@@ -54,7 +54,7 @@
     const { initHttpServer } = require('./../http')
     const httpControllers = require(`${distDir}/httpControllers`)
     const socketsControllers = require(`${distDir}/socketsControllers`)
-    const http = initHttpServer({
+    const http = await initHttpServer({
       returnInstance: true,
       modelManager,
       httpControllers,

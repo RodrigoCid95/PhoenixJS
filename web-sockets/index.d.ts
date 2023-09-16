@@ -7,10 +7,15 @@ import * as http from 'http'
  * @returns {void}
  */
 export function On(nameEvent: string): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => TypedPropertyDescriptor<any>
+interface Req<S = any> extends http.IncomingMessage {
+  session: S
+}
 /**
  * Web socket.
  */
-export type Socket = SocketIO.Socket
+export interface Socket<S = any> extends SocketIO.Socket {
+  readonly request: Req<S>
+}
 /**
  * Config sockets server.
  */
