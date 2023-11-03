@@ -23,7 +23,7 @@ module.exports.afterMiddelware = function afterMid(mids) {
           console.error(`\n${target.name}: El middelware ${mid} no está declarado!`)
           return descriptor
         }
-        mid = target[mid].bind(target)
+        mid = target[mid]
       }
       target.routes[propertyKey].middlewares.after.push(mid)
     }
@@ -39,7 +39,7 @@ module.exports.beforeMiddelware = function beforeMid(mids) {
           console.error(`\n${target.name}: El middelware ${mid} no está declarado!`)
           return descriptor
         }
-        mid = target[mid].bind(target)
+        mid = target[mid]
       }
       target.routes[propertyKey].middlewares.before.push(mid)
     }
@@ -95,8 +95,8 @@ module.exports.initHttpServer = async function initHttpServer({ returnInstance =
       for (const key of routeKeys) {
         let { methods, path, method, middlewares = {} } = routes[key]
         let { before = [], after = [] } = middlewares
-        before = before.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
-        after = after.map(mid => typeof mid === 'string' ? controller[mid].bind(controller) : mid)
+        before = before.map(mid => (typeof mid === 'string' ? controller[mid] : mid).bind(controller))
+        after = after.map(mid => (typeof mid === 'string' ? controller[mid] : mid).bind(controller))
         const mids = [...before, method.bind(controller), ...after]
         for (const m of methods) {
           router[m || 'all'](path, ...mids)
