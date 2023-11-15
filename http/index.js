@@ -156,6 +156,7 @@ module.exports.initHttpServer = async function initHttpServer({ returnInstance =
     events.afterConfig(app)
   }
   app.use(express.json())
+  app.use(express.text())
   for (const router of routers) {
     app.use(...router)
   }
