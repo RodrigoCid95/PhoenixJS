@@ -124,7 +124,10 @@
         sourcemap: true,
         color: true,
         inject,
-        plugins: []
+        plugins: [],
+        banner: {
+          js: `const isRelease = ${command === 'start' ? 'false' : 'true'};\nconst isDebugger = ${command === 'start' ? 'true' : 'false'};`
+        }
       }
       if (command === 'start') {
         opts.plugins.push({
