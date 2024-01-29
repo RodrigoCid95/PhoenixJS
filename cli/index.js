@@ -111,6 +111,16 @@
       compute.on('error', console.error)
     }
     const esbuild = require('esbuild')
+    let plugins = []
+    const pluginsPath = path.join(mainDir, 'plugins')
+    const pluginsDir = path.join(pluginsPath, 'index.js')
+    const pluginsFile = `${pluginsPath}.js`
+    if (fs.existsSync(pluginsDir) || fs.existsSync(pluginsFile)) {
+      const temp = require(pluginsPath)
+      if (Array.isArray(temp)) {
+        plugins = temp
+      }
+    }
     const results = await Promise.all(modules.map(({ input, output, inject = [] }) => {
       const opts = {
         entryPoints: [input],
@@ -124,10 +134,13 @@
         sourcemap: true,
         color: true,
         inject,
-        plugins: [],
+        plugins,
         banner: {
           js: `const isRelease = ${command === 'start' ? 'false' : 'true'};\nconst isDebugger = ${command === 'start' ? 'true' : 'false'};`
         }
+      }
+      if (phoenixSettings.loader) {
+        opts.loader = phoenixSettings.loader
       }
       if (command === 'start') {
         opts.plugins.push({
