@@ -1,6 +1,17 @@
 #!/usr/bin/env node
 'use strict';
 (async (args) => {
+  const log = (message) => {
+    if (process.stdout.clearLine) {
+      process.stdout.clearLine()
+      process.stdout.cursorTo(0)
+    }
+    if (process.stdout.write) {
+      process.stdout.write(message)
+    } else {
+      console.log(message)
+    }
+  }
   const fs = require('node:fs')
   const { paths } = require('./paths')
   const command = args.shift()
@@ -61,18 +72,6 @@
     const destDir = command === 'build' ? paths.releaseDir : paths.distDir
     if (fs.existsSync(destDir)) {
       fs.rmSync(destDir, { recursive: true, force: true })
-    }
-
-    const log = (message) => {
-      if (process.stdout.clearLine) {
-        process.stdout.clearLine()
-        process.stdout.cursorTo(0)
-      }
-      if (process.stdout.write) {
-        process.stdout.write(message)
-      } else {
-        console.log(message)
-      }
     }
 
     let isRunning = false
@@ -193,6 +192,6 @@
       await install('socket.io')
     }
     log('Phoenix Framework!\n')
-    fs.writeFileSync(packagePath, JSON.stringify(pack, null, '\t'), { encoding: 'utf-8' })
+    fs.writeFileSync(paths.packagePath, JSON.stringify(pack, null, '\t'), { encoding: 'utf-8' })
   }
 })(process.argv.slice(2))
