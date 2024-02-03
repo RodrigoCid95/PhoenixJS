@@ -10,11 +10,29 @@ const pluginsPath = path.join(mainDir, 'plugins')
 let releaseDir = '.release'
 let command = 'start'
 
-const verifyDir = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true })
+if (!fs.existsSync(tsConfigPath)) {
+  const tsconfig = {
+    compilerOptions: {
+      baseUrl: ".",
+      declaration: true,
+      emitDeclarationOnly: true,
+      experimentalDecorators: true,
+      emitDecoratorMetadata: true,
+      target: "ES6",
+      moduleResolution: "Node",
+      sourceMap: true,
+      strictNullChecks: true,
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      paths: {
+        "config/*": ["config/*"],
+        "controllers": ["controllers/*"],
+        "libraries/*": ["libraries/*"],
+        "models/*": ["models/*"]
+      }
+    }
   }
-  return dirPath
+  fs.writeFileSync(tsConfigPath, JSON.stringify(tsconfig, null, '\t'), { encoding: 'utf-8' })
 }
 const verifyFile = (filePath) => {
   if (!fs.existsSync(filePath)) {
@@ -50,14 +68,14 @@ const paths = {
     releaseDir = rd
   },
   get releaseDir() {
-    return verifyDir(path.resolve(mainDir, releaseDir))
+    return path.resolve(mainDir, releaseDir)
   },
   resources: {
     root: (resource) => path.join(paths.mainDir, resource),
     release: (resource) => path.join(paths.releaseDir, resource)
   },
   get distDir() {
-    return command === 'start' ? verifyDir(path.join(mainDir, '.debugger')) : verifyDir(path.join(paths.releaseDir, 'server'))
+    return command === 'start' ? path.join(mainDir, '.debugger') : path.join(paths.releaseDir, 'server')
   },
   get packageReleasePath() {
     return path.join(paths.releaseDir, 'package.json')
