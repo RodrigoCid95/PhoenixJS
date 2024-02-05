@@ -27,6 +27,16 @@ declare global {
         type AfterMiddlewareDecorator = typeof AfterMiddlewareDecorator
         function BeforeMiddlewareDecorator(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string) => void
         type BeforeMiddlewareDecorator = typeof BeforeMiddlewareDecorator
+        /**
+         * The object of an express.js response.
+         */
+        type Response = express.Response;
+        /**
+         * The object of an express.js request.
+         */
+        interface Request<S = {}> extends express.Request {
+          session: express.Request['session'] & Partial<S>
+        }
       }
     }
   }
