@@ -2,6 +2,7 @@ const path = require('node:path')
 const fs = require('node:fs')
 
 const mainDir = path.resolve(process.cwd())
+const declarations = path.join(mainDir, 'declarations.d.ts')
 const packagePath = path.join(mainDir, 'package.json')
 const tsConfigPath = path.join(mainDir, 'tsconfig.json')
 const importsPath = path.resolve(__dirname, 'imports')
@@ -48,6 +49,9 @@ const verifyFile = (filePath) => {
 const paths = {
   get mainDir() {
     return mainDir
+  },
+  get declarations() {
+    return declarations
   },
   /**
    * @param {'start' | 'build'} cmd

@@ -1,26 +1,35 @@
 import * as express from 'express'
 
-declare enum Methods {
-  GET = 'get',
-  POST = 'post',
-  PUT = 'put',
-  DELETE = 'delete',
-  ALL = ''
+declare global {
+  namespace PhoenixJS {
+    namespace Controllers {
+      namespace HTTP {
+        enum Methods {
+          GET = 'get',
+          POST = 'post',
+          PUT = 'put',
+          DELETE = 'delete',
+          ALL = ''
+        }
+        type METHODS = typeof Methods
+        function OnDecorator(method: Methods, path: string): (target: Object, propertyKey: string) => void
+        function OnDecorator(methods: Methods[], path: string): (target: Object, propertyKey: string) => void
+        type OnDecorator = typeof OnDecorator
+        type ResponseError = {
+          code?: string
+          message: string
+          stack?: string
+        }
+        type Next = express.NextFunction
+        type ErrorMiddleware = (error?: ResponseError, req?: Request, res?: Response, next?: Next) => void
+        type Middleware = (req?: Request, res?: Response, next?: Next) => void
+        function AfterMiddlewareDecorator(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string) => void
+        type AfterMiddlewareDecorator = typeof AfterMiddlewareDecorator
+        function BeforeMiddlewareDecorator(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string) => void
+        type BeforeMiddlewareDecorator = typeof BeforeMiddlewareDecorator
+      }
+    }
+  }
 }
-export type METHODS = typeof Methods
-declare function OnDecorator(method: Methods, path: string): (target: Object, propertyKey: string) => void
-declare function OnDecorator(methods: Methods[], path: string): (target: Object, propertyKey: string) => void
-export type OnDecorator = typeof OnDecorator
-export declare type ResponseError = {
-  code?: string
-  message: string
-  stack?: string
-}
-export declare type Next = express.NextFunction
-export declare type ErrorMiddleware = (error?: ResponseError, req?: Request, res?: Response, next?: Next) => void
-export declare type Middleware = (req?: Request, res?: Response, next?: Next) => void
-declare function AfterMiddlewareDecorator(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string) => void
-export type AfterMiddlewareDecorator = typeof AfterMiddlewareDecorator
-declare function BeforeMiddlewareDecorator(middleware: Array<string | Middleware | ErrorMiddleware>): (target: Object, propertyKey: string) => void
-export type BeforeMiddlewareDecorator = typeof BeforeMiddlewareDecorator
-export * from '.'
+
+export { }

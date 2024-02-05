@@ -1,6 +1,6 @@
 import * as SocketIO from 'socket.io'
 import * as http from 'http'
-import { Libraries } from './../models'
+import '../models'
 
 interface Req<S = any> extends http.IncomingMessage {
   session: S
@@ -29,11 +29,11 @@ export interface PhoenixSocketsConfig extends Partial<SocketIO.ServerOptions> {
     /**
      * Called before returning a response to the client.
      */
-    onBeforeToAnswer?: (response: any, socket: Socket, getLibraryInstance: Libraries['get']) => any | Promise<any>
+    onBeforeToAnswer?: (response: any, socket: Socket, getLibraryInstance: PhoenixJS.Models.Libraries['get']) => any | Promise<any>
     /**
      * Called when a call is made by the customer.
      */
-    onANewRequest?: (request: any[], socket: Socket, getLibraryInstance: Libraries['get']) => any[] | Promise<any[]>
+    onANewRequest?: (request: any[], socket: Socket, getLibraryInstance: PhoenixJS.Models.Libraries['get']) => any[] | Promise<any[]>
     /**
      * Called when a client disconnects.
      */

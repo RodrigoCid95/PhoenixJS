@@ -154,7 +154,7 @@
         dependencies: pack.dependencies || {},
         license: pack.license || 'ISC'
       }
-      fs.writeFileSync(paths.packageReleasePath, JSON.stringify(newPackage, null, '\t'), { encoding: 'utf8' })
+      fs.writeFileSync(paths.packageReleasePath, JSON.stringify(newPackage, null, '\t'), { encoding: 'utf-8' })
       for (const resource of resources) {
         const srcDir = paths.resources.root(resource)
         if (fs.existsSync(srcDir)) {
@@ -174,8 +174,9 @@
       pack.scripts.build = 'phoenix build'
     }
     const install = (name, dev = false) => {
-      const { exec } = require('child_process')
-      return new Promise(resolve => exec(`npm i ${name}${dev ? ' -D' : ''}`, resolve))
+      const { execSync } = require('child_process')
+      const result = execSync(`npm i ${name}${dev ? ' -D' : ''}`, { encoding: 'utf-8', cwd: paths.mainDir })
+      console.log(result)
     }
     if (!pack.dependencies) {
       pack.dependencies = {}
@@ -183,15 +184,25 @@
     if (!pack.devDependencies) {
       pack.dependencies = {}
     }
+    fs.writeFileSync(paths.packagePath, JSON.stringify(pack, null, '\t'), { encoding: 'utf-8' })
     const dependencies = Object.keys(pack.dependencies)
     if (!dependencies.includes('express')) {
-      await install('express')
-      await install('@types/express', true)
+      log('Instalando ExpressJS ...')
+      install('express')
+      install('@types/express', true)
     }
     if (!dependencies.includes('socket.io')) {
-      await install('socket.io')
+      log('Instalando Socket.IO ...')
+      install('socket.io')
+    }
+    const devDependencies = Object.keys(pack.devDependencies)
+    if (!devDependencies.includes('@types/node')) {
+      log('Instalando @types/node ...')
+      install('@types/node', true)
+    }
+    if (!fs.existsSync(paths.declarations)) {
+      fs.writeFileSync(paths.declarations, "import 'phoenix-js'\nimport 'phoenix-js/config/http'\nimport 'phoenix-js/config/sockets'\nimport 'phoenix-js/libraries'\nimport 'phoenix-js/models'\nimport 'phoenix-js/controllers'\nimport 'phoenix-js/controllers/http'\nimport 'phoenix-js/controllers/sockets'", { encoding: 'utf-8' })
     }
     log('Phoenix Framework!\n')
-    fs.writeFileSync(paths.packagePath, JSON.stringify(pack, null, '\t'), { encoding: 'utf-8' })
   }
 })(process.argv.slice(2))

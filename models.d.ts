@@ -1,7 +1,15 @@
-type LibrariesModule = typeof import("libraries")
-export declare class Libraries {
-  get<K extends keyof LibrariesModule>(name: K): LibrariesModule[K]
-  get<T = {}>(name: keyof LibrariesModule): T
+declare global {
+  namespace PhoenixJS {
+    namespace Models {
+      type LibrariesModule = typeof import("libraries")
+      class Libraries {
+        get<K extends keyof LibrariesModule>(name: K): LibrariesModule[K]
+        get<T = {}>(name: keyof LibrariesModule): T
+      }
+      function LibraryDecorator(nameLibrary: keyof LibrariesModule): (target: Object, propertyKey: string) => void
+      type LibraryDecorator = typeof LibraryDecorator
+    }
+  }
 }
-declare function LibraryDecorator(nameLibrary: keyof LibrariesModule): (target: Object, propertyKey: string) => void
-export type LibraryDecorator = typeof LibraryDecorator
+
+export { }
