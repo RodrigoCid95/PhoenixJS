@@ -47,23 +47,15 @@ const verifyFile = (filePath) => {
 }
 
 const paths = {
-  get mainDir() {
-    return mainDir
-  },
-  get declarations() {
-    return declarations
-  },
+  mainDir,
+  declarations,
+  packagePath,
+  tsConfigPath,
   /**
    * @param {'start' | 'build'} cmd
    */
   set command(cmd) {
     command = cmd
-  },
-  get packagePath() {
-    return packagePath
-  },
-  get tsConfigPath() {
-    return tsConfigPath
   },
   /**
    * @param {string} rd 
@@ -84,8 +76,83 @@ const paths = {
   get packageReleasePath() {
     return path.join(paths.releaseDir, 'package.json')
   },
+  inputs: {
+    emitters: path.join(modsPath, 'emitters.ts'),
+    configurations: {
+      get source() {
+        return verifyFile(path.join(mainDir, 'config', 'index.ts'))
+      },
+      module: path.join(modsPath, 'configs.ts')
+    },
+    libraries: {
+      get source() {
+        return verifyFile(path.join(mainDir, 'libraries', 'index.ts'))
+      },
+      module: path.join(modsPath, 'libs.ts')
+    },
+    models: {
+      get source() {
+        return verifyFile(path.join(mainDir, 'models', 'index.ts'))
+      },
+      module: path.join(modsPath, 'models.ts')
+    },
+    get controllers() {
+      return verifyFile(path.join(mainDir, 'controllers', 'index.ts'))
+    },
+    get httpControllers() {
+      return verifyFile(path.join(mainDir, 'controllers', 'http', 'index.ts'))
+    },
+    get socketsControllers() {
+      return verifyFile(path.join(mainDir, 'controllers', 'sockets', 'index.ts'))
+    },
+    get main() {
+      return verifyFile(path.join(mainDir, 'main.ts'))
+    }
+  },
+  outputs: {
+    get emitters() {
+      return path.join(paths.distDir, 'emitters.js')
+    },
+    configurations: {
+      get source() {
+        return path.join(paths.distDir, 'configurations.js')
+      },
+      get module() {
+        return path.join(paths.distDir, 'configurations.module.js')
+      }
+    },
+    libraries: {
+      get source() {
+        return path.join(paths.distDir, 'libraries.js')
+      },
+      get module() {
+        return path.join(paths.distDir, 'libraries.module.js')
+      }
+    },
+    models: {
+      get source() {
+        return path.join(paths.distDir, 'models.js')
+      },
+      get module() {
+        return path.join(paths.distDir, 'models.module.js')
+      }
+    },
+    get controllers() {
+      return path.join(paths.distDir, 'controllers.js')
+    },
+    get httpControllers() {
+      return path.join(paths.distDir, 'httpControllers.js')
+    },
+    get socketsControllers() {
+      return path.join(paths.distDir, 'socketsControllers.js')
+    },
+    get main() {
+      return path.join(paths.distDir, 'main.js')
+    }
+  },
   modules: {
     inputs: {
+      autoMain: path.join(modsPath, 'main.ts'),
       emitters: path.join(modsPath, 'emitters.ts'),
       configs: path.join(modsPath, 'configs.ts'),
       libs: path.join(modsPath, 'libs.ts'),
@@ -112,9 +179,6 @@ const paths = {
       },
       get main() {
         return verifyFile(path.join(mainDir, 'main.ts'))
-      },
-      get autoMain() {
-        return path.join(modsPath, 'main.ts')
       }
     },
     outputs: {
@@ -156,7 +220,7 @@ const paths = {
       },
       get main() {
         return path.join(paths.distDir, 'main.js')
-      },
+      }
     },
     injects: {
       emitters: path.join(importsPath, 'emitters.js'),
