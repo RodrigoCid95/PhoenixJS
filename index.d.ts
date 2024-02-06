@@ -17,6 +17,7 @@ declare global {
     class Flags {
       get(name: string): string | number | boolean
     }
+    type globalEmitters = Emitters
     function InitHttpServer(options: { onMessage?: (message: string) => void; }): void
     function InitHttpServer(options: { returnInstance?: boolean; onMessage?: (message: string) => void; }): http.Server
     type InitHttpServer = typeof InitHttpServer

@@ -38,7 +38,9 @@
     paths.releaseDir = phoenixSettings.releaseDir
   }
   const modules = [
-    { input: paths.modules.inputs.configurations, output: paths.modules.outputs.configurations },
+    { input: paths.modules.inputs.emitters, output: paths.modules.outputs.emitters },
+
+    { input: paths.modules.inputs.configurations, output: paths.modules.outputs.configurations, inject: [paths.modules.injects.emitters] },
     { input: paths.modules.inputs.configs, output: paths.modules.outputs.configs },
 
     { input: paths.modules.inputs.libraries, output: paths.modules.outputs.libraries, inject: [paths.modules.injects.libraries, paths.modules.injects.emitters] },
@@ -49,11 +51,11 @@
   ]
 
   if (type.includes('http')) {
-    modules.push({ input: type.includes('sockets') ? paths.modules.inputs.httpControllers : paths.modules.inputs.controllers, output: paths.modules.outputs.httpControllers, inject: [paths.modules.injects.controller, paths.modules.injects.http] })
+    modules.push({ input: type.includes('sockets') ? paths.modules.inputs.httpControllers : paths.modules.inputs.controllers, output: paths.modules.outputs.httpControllers, inject: [paths.modules.injects.controller, paths.modules.injects.http, paths.modules.injects.emitters] })
     modules.push({ input: paths.modules.inputs.http, output: paths.modules.outputs.http })
   }
   if (type.includes('sockets')) {
-    modules.push({ input: type.includes('http') ? paths.modules.inputs.socketsControllers : paths.modules.inputs.controllers, output: paths.modules.outputs.socketsControllers, inject: [paths.modules.injects.controller, paths.modules.injects.sockets] })
+    modules.push({ input: type.includes('http') ? paths.modules.inputs.socketsControllers : paths.modules.inputs.controllers, output: paths.modules.outputs.socketsControllers, inject: [paths.modules.injects.controller, paths.modules.injects.sockets, paths.modules.injects.emitters] })
     modules.push({ input: paths.modules.inputs.sockets, output: paths.modules.outputs.sockets })
   }
 

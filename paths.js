@@ -86,6 +86,7 @@ const paths = {
   },
   modules: {
     inputs: {
+      emitters: path.join(modsPath, 'emitters.ts'),
       configs: path.join(modsPath, 'configs.ts'),
       libs: path.join(modsPath, 'libs.ts'),
       modls: path.join(modsPath, 'modls.ts'),
@@ -117,6 +118,9 @@ const paths = {
       }
     },
     outputs: {
+      get emitters() {
+        return path.join(paths.distDir, 'emitters.js')
+      },
       get configs() {
         return path.join(paths.distDir, 'config.js')
       },
@@ -155,39 +159,18 @@ const paths = {
       },
     },
     injects: {
-      get libraries() {
-        return path.join(importsPath, 'libraries.js')
-      },
-      get models() {
-        return path.join(importsPath, 'models.js')
-      },
-      get controller() {
-        return path.join(importsPath, 'controllers.js')
-      },
-      get http() {
-        return path.join(importsPath, 'controllers.http.js')
-      },
-      get sockets() {
-        return path.join(importsPath, 'controllers.sockets.js')
-      },
-      get httpMain() {
-        return path.join(importsPath, 'main.http.js')
-      },
-      get socketsMain() {
-        return path.join(importsPath, 'main.sockets.js')
-      },
-      get emitters() {
-        return path.join(importsPath, 'emitters.js')
-      },
-      get main() {
-        return path.join(importsPath, 'main.js')
-      },
-      get mainHttp() {
-        return path.join(importsPath, 'main.http.js')
-      },
-      get mainSockets() {
-        return path.join(importsPath, 'main.sockets.js')
-      }
+      emitters: path.join(importsPath, 'emitters.js'),
+      libraries: path.join(importsPath, 'libraries.js'),
+      models: path.join(importsPath, 'models.js'),
+      controller: path.join(importsPath, 'controllers.js'),
+      http: path.join(importsPath, 'controllers.http.js'),
+      sockets: path.join(importsPath, 'controllers.sockets.js'),
+      httpMain: path.join(importsPath, 'main.http.js'),
+      socketsMain: path.join(importsPath, 'main.sockets.js'),
+      emitters: path.join(importsPath, 'emitters.js'),
+      main: path.join(importsPath, 'main.js'),
+      mainHttp: path.join(importsPath, 'main.http.js'),
+      mainSockets: path.join(importsPath, 'main.sockets.js')
     }
   },
   pluginsPath,

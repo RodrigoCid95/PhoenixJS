@@ -21,7 +21,6 @@ for (const controllerName of indices) {
           callback: controller[propertyKey].bind(controller)
         })
       }
-      debugger
       if (Controller.prototype.onConnection) {
         if (!Object.prototype.hasOwnProperty.call(routers, 'connectCallbacks')) {
           Object.defineProperty(routers, 'connectCallbacks', { value: [], writable: false })
