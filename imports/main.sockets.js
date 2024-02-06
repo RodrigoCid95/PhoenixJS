@@ -24,6 +24,16 @@ export const initSocketsServer = ({ http, onError = console.error } = {}) => {
     if (events.onConnect) {
       await events.onConnect(socket)
     }
+    if (Object.prototype.hasOwnProperty.call(routers, 'connectCallbacks')) {
+      for (const callback of routers.connectCallbacks) {
+        await callback(socket)
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(routers, 'disconnectingCallbacks')) {
+      for (const callback of routers.disconnectingCallbacks) {
+        socket.on('disconnecting', reason => callback(reason, socket))
+      }
+    }
     for (const { nameEvent, callback } of routers) {
       socket.on(nameEvent, async (...args) => {
         let reply = null
