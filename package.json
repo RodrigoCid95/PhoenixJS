@@ -1,7 +1,7 @@
 {
-	"name": "phoenix-js",
-	"version": "1.9.6",
-	"description": "",
+	"name": "phx-js",
+	"version": "1.0.0",
+	"description": "Framework backend",
 	"main": "index.js",
 	"types": "./index.d.ts",
 	"bin": {
@@ -10,8 +10,16 @@
 	"scripts": {
 		"start": "node ."
 	},
-	"keywords": [],
-	"author": "Rodrigo Cid",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/RodrigoCid95/PhoenixJS.git"
+	},
+	"bugs": {
+		"url": "https://github.com/RodrigoCid95/PhoenixJS/issues"
+	},
+	"homepage": "https://github.com/RodrigoCid95/PhoenixJS#readme",
+	"keywords": ["framework", "backend", "express", "socket.io", "mvc"],
+	"author": "Rodrigo Cid <rodrigocid95@gmail.com>",
 	"license": "MIT",
 	"dependencies": {
 		"esbuild": "^0.20.0"

@@ -67,7 +67,7 @@
   modules.push({ input: boot === 'manual' ? paths.modules.inputs.main : paths.modules.inputs.autoMain, output: paths.modules.outputs.main, inject: mainInject })
 
   if (command) {
-    const external = [...Object.keys(pack.dependencies || { 'phoenix': null }), ...Object.keys(pack.devDependencies || { 'phoenix': null })]
+    const external = [...Object.keys(pack.dependencies || { 'phx-js': null }), ...Object.keys(pack.devDependencies || { 'phx-js': null })]
 
     const destDir = command === 'build' ? paths.releaseDir : paths.distDir
     if (fs.existsSync(destDir)) {
@@ -144,7 +144,7 @@
       isRunning = true
     } else {
       const newPackage = {
-        name: pack.name || 'gorila-server',
+        name: pack.name || 'phoenix-server',
         version: pack.version || '1.0.0',
         description: pack.description || '',
         main: './server/main.js',
@@ -201,7 +201,7 @@
       install('@types/node', true)
     }
     if (!fs.existsSync(paths.declarations)) {
-      fs.writeFileSync(paths.declarations, "import 'phoenix-js'\nimport 'phoenix-js/config/http'\nimport 'phoenix-js/config/sockets'\nimport 'phoenix-js/libraries'\nimport 'phoenix-js/models'\nimport 'phoenix-js/controllers'\nimport 'phoenix-js/controllers/http'\nimport 'phoenix-js/controllers/sockets'", { encoding: 'utf-8' })
+      fs.writeFileSync(paths.declarations, "import 'phx-js'\nimport 'phx-js/config/http'\nimport 'phx-js/config/sockets'\nimport 'phx-js/libraries'\nimport 'phx-js/models'\nimport 'phx-js/controllers'\nimport 'phx-js/controllers/http'\nimport 'phx-js/controllers/sockets'", { encoding: 'utf-8' })
     }
     log('Phoenix Framework!\n')
   }
